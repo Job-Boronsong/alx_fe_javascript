@@ -12,10 +12,9 @@ let quotes = [
   // Get DOM elements
   const quoteDisplay = document.getElementById('quoteDisplay');
   const newQuoteBtn = document.getElementById('newQuote');
-  const newQuoteTextInput = document.getElementById('newQuoteText');
-  const newQuoteCategoryInput = document.getElementById('newQuoteCategory');
-  const addQuoteButton = document.getElementById('addQuoteButton');
+  // Note: newQuoteTextInput, newQuoteCategoryInput, addQuoteButton will be created dynamically
   const messageBox = document.getElementById('messageBox');
+  const addQuoteFormDiv = document.getElementById('addQuoteForm'); // Reference to the div that will hold the form
   
   /**
    * Displays a message to the user in a styled box.
@@ -47,9 +46,8 @@ let quotes = [
   /**
    * Displays a random quote from the 'quotes' array in the DOM.
    * Clears previous content before displaying the new quote.
-   * Reverted to 'showRandomQuote' as per checker's requirement.
    */
-  function showRandomQuote() { // Renamed function back to showRandomQuote
+  function showRandomQuote() {
     // Clear existing content in the display area
     quoteDisplay.innerHTML = '';
   
@@ -86,6 +84,10 @@ let quotes = [
    * Clears input fields and updates the display.
    */
   function addQuote() {
+    // Get the dynamically created input fields
+    const newQuoteTextInput = document.getElementById('newQuoteText');
+    const newQuoteCategoryInput = document.getElementById('newQuoteCategory');
+  
     const quoteText = newQuoteTextInput.value.trim();
     const quoteCategory = newQuoteCategoryInput.value.trim();
   
@@ -110,20 +112,64 @@ let quotes = [
   
     // Optionally, show the newly added quote or a confirmation message
     showMessage('Quote added successfully!', 'success');
-    showRandomQuote(); // Call the renamed function
+    showRandomQuote();
   }
+  
+  /**
+   * Dynamically creates the form for adding new quotes and appends it to the DOM.
+   * This function is now responsible for generating the form elements.
+   */
+  function createAddQuoteForm() {
+    // Clear any existing content in the form div to prevent duplicates
+    addQuoteFormDiv.innerHTML = '';
+  
+    // Create h2 for the title
+    const titleElement = document.createElement('h2');
+    titleElement.className = 'text-2xl font-bold text-gray-800';
+    titleElement.textContent = 'Add Your Own Quote';
+    addQuoteFormDiv.appendChild(titleElement);
+  
+    // Create input for quote text
+    const quoteTextInput = document.createElement('input');
+    quoteTextInput.id = 'newQuoteText';
+    quoteTextInput.type = 'text';
+    quoteTextInput.placeholder = 'Enter a new quote';
+    quoteTextInput.className = 'w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500';
+    addQuoteFormDiv.appendChild(quoteTextInput);
+  
+    // Create input for quote category
+    const quoteCategoryInput = document.createElement('input');
+    quoteCategoryInput.id = 'newQuoteCategory';
+    quoteCategoryInput.type = 'text';
+    quoteCategoryInput.placeholder = 'Enter quote category (e.g., Inspiration)';
+    quoteCategoryInput.className = 'w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500';
+    addQuoteFormDiv.appendChild(quoteCategoryInput);
+  
+    // Create button to add quote
+    const addQuoteButton = document.createElement('button');
+    addQuoteButton.id = 'addQuoteButton';
+    addQuoteButton.className = 'w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75';
+    addQuoteButton.textContent = 'Add Quote';
+    // Attach event listener directly to the dynamically created button
+    addQuoteButton.addEventListener('click', addQuote);
+    addQuoteFormDiv.appendChild(addQuoteButton);
+  
+    // Remove the static input fields and button from the HTML if they were initially there,
+    // as this function will now handle their creation.
+    // This line is illustrative; in the HTML, we'll remove these static elements.
+  }
+  
   
   // --- Event Listeners ---
   
   // Event listener for the "Show New Quote" button
-  newQuoteBtn.addEventListener('click', showRandomQuote); // Call the renamed function
+  newQuoteBtn.addEventListener('click', showRandomQuote);
   
   // --- Initial setup on page load ---
   document.addEventListener('DOMContentLoaded', () => {
     // Display an initial random quote when the page loads
-    showRandomQuote(); // Call the renamed function
+    showRandomQuote();
+    // Call the function to create the add quote form dynamically
+    createAddQuoteForm();
   });
-  
-  // Event listener for the "Add Quote" button
-  addQuoteButton.addEventListener('click', addQuote);
   
