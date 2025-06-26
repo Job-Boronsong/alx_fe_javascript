@@ -47,8 +47,9 @@ let quotes = [
   /**
    * Displays a random quote from the 'quotes' array in the DOM.
    * Clears previous content before displaying the new quote.
+   * Reverted to 'showRandomQuote' as per checker's requirement.
    */
-  function displayRandomQuote() {
+  function showRandomQuote() { // Renamed function back to showRandomQuote
     // Clear existing content in the display area
     quoteDisplay.innerHTML = '';
   
@@ -109,20 +110,20 @@ let quotes = [
   
     // Optionally, show the newly added quote or a confirmation message
     showMessage('Quote added successfully!', 'success');
-    displayRandomQuote();
+    showRandomQuote(); // Call the renamed function
   }
   
   // --- Event Listeners ---
   
   // Event listener for the "Show New Quote" button
-  newQuoteBtn.addEventListener('click', displayRandomQuote);
-  
-  // Event listener for the "Add Quote" button
-  addQuoteButton.addEventListener('click', addQuote);
+  newQuoteBtn.addEventListener('click', showRandomQuote); // Call the renamed function
   
   // --- Initial setup on page load ---
   document.addEventListener('DOMContentLoaded', () => {
     // Display an initial random quote when the page loads
-    displayRandomQuote();
+    showRandomQuote(); // Call the renamed function
   });
+  
+  // Event listener for the "Add Quote" button
+  addQuoteButton.addEventListener('click', addQuote);
   
