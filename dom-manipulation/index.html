@@ -30,6 +30,15 @@
   <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center space-y-6">
     <h1 class="text-4xl font-extrabold text-indigo-700 mb-6">Dynamic Quote Generator</h1>
 
+    <!-- Category Filter Dropdown -->
+    <div class="mb-4">
+      <label for="categoryFilter" class="block text-gray-700 text-sm font-bold mb-2">Filter by Category:</label>
+      <select id="categoryFilter" class="block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <option value="all">All Categories</option>
+        <!-- Categories will be populated dynamically by JavaScript -->
+      </select>
+    </div>
+
     <!-- Quote display area -->
     <div id="quoteDisplay" class="bg-indigo-50 p-6 rounded-lg border border-indigo-200 shadow-inner text-indigo-800">
       <!-- Quote and category will be dynamically inserted here by JavaScript -->
