@@ -4,6 +4,7 @@ let quotes = [];
 // Constants for Local Storage and Session Storage keys
 const LOCAL_STORAGE_QUOTES_KEY = 'dynamicQuotes';
 const SESSION_STORAGE_LAST_QUOTE_KEY = 'lastViewedQuote';
+const LOCAL_STORAGE_LAST_CATEGORY_FILTER_KEY = 'lastCategoryFilter'; // New key for filter
 
 // Get DOM elements
 const quoteDisplay = document.getElementById('quoteDisplay');
@@ -12,6 +13,7 @@ const addQuoteFormDiv = document.getElementById('addQuoteForm');
 const messageBox = document.getElementById('messageBox');
 const exportQuotesBtn = document.getElementById('exportQuotes');
 const importFileBtn = document.getElementById('importFile'); // The hidden file input
+const categoryFilterDropdown = document.getElementById('categoryFilter'); // New DOM element for filter
 
 
 /**
@@ -120,7 +122,7 @@ function showRandomQuote() {
 }
 
 /**
- * Displays a specific quote in the DOM. Used for loading from session storage.
+ * Displays a specific quote in the DOM. Used for loading from session storage or filter.
  * @param {object} quote - The quote object to display.
  */
 function displaySpecificQuote(quote) {
@@ -172,11 +174,12 @@ function addQuote() {
 
   // Save quotes to local storage after modification
   saveQuotes();
+  populateCategories(); // Update categories dropdown with potential new category
 
   // Show confirmation message
   showMessage('Quote added successfully!', 'success');
-  // Display the newly added quote or a random one
-  showRandomQuote();
+  // Re-apply current filter or show random from all if 'all' is selected
+  filterQuotes();
 }
 
 /**
@@ -278,8 +281,8 @@ function importFromJsonFile(event) {
       // Add imported quotes to the existing quotes array
       quotes.push(...importedQuotes);
       saveQuotes(); // Save updated array to local storage
-      showMessage(`Successfully imported ${importedQuotes.length} quotes!`, 'success');
-      showRandomQuote(); // Display a random quote including the new ones
+      populateCategories(); // Update categories dropdown after import
+      filterQuotes(); // Display a random quote considering the current filter, or from all if new
     } catch (parseError) {
       console.error("Error parsing JSON file:", parseError);
       showMessage("Failed to import quotes. Invalid JSON format.", "error");
@@ -293,47 +296,136 @@ function importFromJsonFile(event) {
   fileReader.readAsText(file);
 }
 
+/**
+ * Populates the category filter dropdown with unique categories from the quotes array.
+ */
+function populateCategories() {
+  // Store the currently selected value before clearing options
+  const currentSelectedCategory = categoryFilterDropdown.value;
+
+  // Clear existing options
+  categoryFilterDropdown.innerHTML = '';
+
+  const allOption = document.createElement('option');
+  allOption.value = 'all';
+  allOption.textContent = 'All Categories';
+  categoryFilterDropdown.appendChild(allOption);
+
+  const uniqueCategories = [...new Set(quotes.map(quote => quote.category))];
+  uniqueCategories.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())); // Sort alphabetically
+
+  uniqueCategories.forEach(category => {
+    const option = document.createElement('option');
+    option.value = category;
+    option.textContent = category;
+    categoryFilterDropdown.appendChild(option);
+  });
+
+  // Restore last selected filter if available, or the previously selected value if it's still an option
+  const lastSelectedFilter = localStorage.getItem(LOCAL_STORAGE_LAST_CATEGORY_FILTER_KEY);
+  if (lastSelectedFilter && Array.from(categoryFilterDropdown.options).some(option => option.value === lastSelectedFilter)) {
+    categoryFilterDropdown.value = lastSelectedFilter;
+  } else if (Array.from(categoryFilterDropdown.options).some(option => option.value === currentSelectedCategory)) {
+      // If the last selected filter is not found, but the current one is still valid
+      categoryFilterDropdown.value = currentSelectedCategory;
+  } else {
+    categoryFilterDropdown.value = 'all'; // Default to 'all' if no preference or old preference is gone
+  }
+}
+
+/**
+ * Filters and displays quotes based on the selected category.
+ * Saves the selected filter to local storage.
+ */
+function filterQuotes() {
+  const selectedCategory = categoryFilterDropdown.value;
+  localStorage.setItem(LOCAL_STORAGE_LAST_CATEGORY_FILTER_KEY, selectedCategory); // Save filter
+
+  let quotesToDisplay = [];
+  if (selectedCategory === 'all') {
+    quotesToDisplay = quotes;
+  } else {
+    quotesToDisplay = quotes.filter(quote => quote.category.toLowerCase() === selectedCategory.toLowerCase());
+  }
+
+  // Clear existing content in the display area
+  quoteDisplay.innerHTML = '';
+
+  if (quotesToDisplay.length === 0) {
+    const noQuoteMessage = document.createElement('p');
+    noQuoteMessage.className = 'text-gray-500 italic';
+    noQuoteMessage.textContent = `No quotes found for category "${selectedCategory}".`;
+    quoteDisplay.appendChild(noQuoteMessage);
+    sessionStorage.removeItem(SESSION_STORAGE_LAST_QUOTE_KEY); // Clear last viewed if no quotes in filter
+    return;
+  }
+
+  // Pick a random quote from the filtered list and display it
+  const randomIndex = Math.floor(Math.random() * quotesToDisplay.length);
+  const randomFilteredQuote = quotesToDisplay[randomIndex];
+  displaySpecificQuote(randomFilteredQuote); // Reuse display function
+
+  // Store the last viewed quote (from the filtered list) in Session Storage
+  try {
+    sessionStorage.setItem(SESSION_STORAGE_LAST_QUOTE_KEY, JSON.stringify(randomFilteredQuote));
+  } catch (e) {
+    console.error("Error saving last viewed filtered quote to Session Storage:", e);
+  }
+}
+
 
 // --- Event Listeners ---
 
 // Event listener for the "Show New Quote" button
-newQuoteBtn.addEventListener('click', showRandomQuote);
+newQuoteBtn.addEventListener('click', filterQuotes); // Clicking this will show a random quote from the *currently filtered* list
 
 // Event listener for the "Export Quotes" button
 exportQuotesBtn.addEventListener('click', exportQuotesToJson);
+
+// Event listener for the category filter dropdown
+categoryFilterDropdown.addEventListener('change', filterQuotes);
+
 
 // --- Initial setup on page load ---
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Load quotes from Local Storage
   const quotesLoaded = loadQuotes();
 
-  // 2. Try to load and display the last viewed quote from Session Storage
+  // 2. Dynamically create the add quote form
+  createAddQuoteForm(); // Call this early so input elements are available if needed by other functions
+
+  // 3. Populate categories dropdown
+  populateCategories();
+
+
+  // 4. Try to load and display the last viewed quote from Session Storage,
+  //    or apply the last filter and show a random quote from that category.
   try {
     const lastViewedQuote = sessionStorage.getItem(SESSION_STORAGE_LAST_QUOTE_KEY);
+    const lastSelectedFilter = localStorage.getItem(LOCAL_STORAGE_LAST_CATEGORY_FILTER_KEY);
+
     if (lastViewedQuote) {
       const parsedLastQuote = JSON.parse(lastViewedQuote);
+      // Ensure the parsed quote is still valid and its category matches the current filter if one is set
       if (parsedLastQuote && parsedLastQuote.text && parsedLastQuote.category) {
-        displaySpecificQuote(parsedLastQuote);
-        showMessage("Last viewed quote loaded from session.", "info");
-      } else {
-        // Fallback if session storage content is corrupted or incomplete
-        if (quotesLoaded) { // Only show random if quotes were loaded from local storage
-          showRandomQuote();
+        // If a filter was active, check if the last viewed quote fits it
+        if (lastSelectedFilter && lastSelectedFilter !== 'all' && parsedLastQuote.category.toLowerCase() !== lastSelectedFilter.toLowerCase()) {
+          // If the last viewed quote doesn't match the last filter, apply the filter instead
+          filterQuotes();
         } else {
-          displaySpecificQuote({ text: "Welcome! Add your first quote.", category: "Getting Started" });
+          displaySpecificQuote(parsedLastQuote);
+          showMessage("Last viewed quote loaded.", "info");
         }
+      } else {
+        filterQuotes(); // If session data is corrupted, apply filter or show all
       }
     } else {
-      // If no last viewed quote in session, show a random one from loaded quotes (or initial ones if none in local storage)
-      showRandomQuote();
+      filterQuotes(); // If no session data, apply filter or show all
     }
   } catch (e) {
-    console.error("Error parsing last viewed quote from Session Storage:", e);
-    showMessage("Could not load last viewed quote. Session data might be corrupted.", "error");
-    showRandomQuote(); // Fallback to showing a random quote
+    console.error("Error handling initial display with session/local storage:", e);
+    showMessage("Could not load last preferences. Displaying all quotes.", "error");
+    categoryFilterDropdown.value = 'all'; // Reset filter to all on error
+    filterQuotes(); // Fallback to displaying filtered or all quotes
   }
-
-
-  // 3. Dynamically create the add quote form
-  createAddQuoteForm();
 });
