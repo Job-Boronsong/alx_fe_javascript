@@ -19,6 +19,10 @@
       justify-content: center;
       min-height: 100vh; /* Ensure it takes full viewport height */
     }
+    /* Style for file input to hide default and use custom button */
+    #importFile {
+      display: none; /* Hide the default file input */
+    }
   </style>
 </head>
 <body class="bg-gray-100 p-6 flex flex-col items-center justify-center min-h-screen">
@@ -38,16 +42,27 @@
 
     <hr class="my-6 border-t border-gray-200">
 
-    <!-- Form for adding new quotes -->
+    <!-- Form for adding new quotes - will be dynamically created by JS -->
     <div id="addQuoteForm" class="space-y-4">
-      <h2 class="text-2xl font-bold text-gray-800">Add Your Own Quote</h2>
-      <input id="newQuoteText" type="text" placeholder="Enter a new quote"
-             class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-      <input id="newQuoteCategory" type="text" placeholder="Enter quote category (e.g., Inspiration)"
-             class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-      <button id="addQuoteButton" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75">
-        Add Quote
+      <!-- Content for adding quotes will be appended here by createAddQuoteForm() -->
+    </div>
+
+    <hr class="my-6 border-t border-gray-200">
+
+    <!-- JSON Import/Export Section -->
+    <div class="space-y-4">
+      <h2 class="text-2xl font-bold text-gray-800">Manage Quotes (JSON)</h2>
+
+      <!-- Export Button -->
+      <button id="exportQuotes" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
+        Export Quotes to JSON
       </button>
+
+      <!-- Import Section -->
+      <label for="importFile" class="block w-full cursor-pointer bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-75">
+        Import Quotes from JSON
+        <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
+      </label>
     </div>
 
     <!-- Message box for user feedback -->
