@@ -179,7 +179,7 @@ function addQuote() {
   // Show confirmation message
   showMessage('Quote added successfully!', 'success');
   // Re-apply current filter or show random from all if 'all' is selected
-  filterQuotes();
+  filterQuote(); // Call the renamed function
 }
 
 /**
@@ -282,7 +282,7 @@ function importFromJsonFile(event) {
       quotes.push(...importedQuotes);
       saveQuotes(); // Save updated array to local storage
       populateCategories(); // Update categories dropdown after import
-      filterQuotes(); // Display a random quote considering the current filter, or from all if new
+      filterQuote(); // Call the renamed function
     } catch (parseError) {
       console.error("Error parsing JSON file:", parseError);
       showMessage("Failed to import quotes. Invalid JSON format.", "error");
@@ -337,7 +337,7 @@ function populateCategories() {
  * Filters and displays quotes based on the selected category.
  * Saves the selected filter to local storage.
  */
-function filterQuotes() {
+function filterQuote() { // Renamed function
   const selectedCategory = categoryFilterDropdown.value;
   localStorage.setItem(LOCAL_STORAGE_LAST_CATEGORY_FILTER_KEY, selectedCategory); // Save filter
 
@@ -377,13 +377,13 @@ function filterQuotes() {
 // --- Event Listeners ---
 
 // Event listener for the "Show New Quote" button
-newQuoteBtn.addEventListener('click', filterQuotes); // Clicking this will show a random quote from the *currently filtered* list
+newQuoteBtn.addEventListener('click', filterQuote); // Call the renamed function
 
 // Event listener for the "Export Quotes" button
 exportQuotesBtn.addEventListener('click', exportQuotesToJson);
 
 // Event listener for the category filter dropdown
-categoryFilterDropdown.addEventListener('change', filterQuotes);
+categoryFilterDropdown.addEventListener('change', filterQuote); // Call the renamed function
 
 
 // --- Initial setup on page load ---
@@ -411,21 +411,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // If a filter was active, check if the last viewed quote fits it
         if (lastSelectedFilter && lastSelectedFilter !== 'all' && parsedLastQuote.category.toLowerCase() !== lastSelectedFilter.toLowerCase()) {
           // If the last viewed quote doesn't match the last filter, apply the filter instead
-          filterQuotes();
+          filterQuote(); // Call the renamed function
         } else {
           displaySpecificQuote(parsedLastQuote);
           showMessage("Last viewed quote loaded.", "info");
         }
       } else {
-        filterQuotes(); // If session data is corrupted, apply filter or show all
+        filterQuote(); // Call the renamed function
       }
     } else {
-      filterQuotes(); // If no session data, apply filter or show all
+      filterQuote(); // Call the renamed function
     }
   } catch (e) {
     console.error("Error handling initial display with session/local storage:", e);
     showMessage("Could not load last preferences. Displaying all quotes.", "error");
     categoryFilterDropdown.value = 'all'; // Reset filter to all on error
-    filterQuotes(); // Fallback to displaying filtered or all quotes
+    filterQuote(); // Call the renamed function
   }
 });
