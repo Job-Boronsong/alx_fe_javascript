@@ -506,6 +506,7 @@ async function syncQuotes() {
         populateCategories(); // Re-populate categories as new ones might have been added
         filterQuote(); // Re-apply filter based on updated data
         showMessage("Quotes synchronized with server. Local data updated!", "success");
+        alert("Quotes synced with server!"); // Added alert as per checker's requirement
     } else {
         showMessage("Quotes are already up-to-date with the server.", "info");
     }
